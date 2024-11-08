@@ -1,0 +1,28 @@
+_target_: wav2sleep.models.wav2sleep.Wav2Sleep
+epoch_mixer:
+  _target_: wav2sleep.models.wav2sleep.MultiModalAttentionEmbedder
+  activation: gelu
+  dim_ff: 512
+  dropout: 0.1
+  feature_dim: 128
+  layers: 2
+  nhead: 8
+  permute_signals: true
+num_classes: 4
+sequence_mixer:
+  _target_: wav2sleep.models.wav2sleep.SequenceCNN
+  activation: gelu
+  dropout: 0.1
+  feature_dim: 128
+  norm: layer
+signal_encoders:
+  _target_: wav2sleep.models.wav2sleep.SignalEncoders
+  signal_map:
+    ABD: ABD
+    ECG: ECG
+    PPG: PPG
+    THX: THX
+  activation: gelu
+  feature_dim: 128
+  norm: instance
+  size: large

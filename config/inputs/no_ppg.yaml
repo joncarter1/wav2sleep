@@ -1,0 +1,5 @@
+# Mapping from columns to embedders.
+signal_map:
+  ABD: ABD
+  THX: THX
+  ECG: ECG

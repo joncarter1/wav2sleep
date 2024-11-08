@@ -1,0 +1,6 @@
+mlflow:
+  _target_: hydra_useful_callbacks.MLFlowCallback
+  run_name: ${name}
+  tracking_uri: "${oc.env: MLFLOW_TRACKING_URI, null}" # Set in .env
+  experiment_name: ${mlflow_experiment}
+  nested: True

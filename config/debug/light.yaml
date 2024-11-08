@@ -1,0 +1,4 @@
+level: 1
+verbose: False
+experiment_override: debug_runs
+log_subfolder: debug
