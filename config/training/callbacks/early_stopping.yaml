@@ -1,0 +1,8 @@
+early_stopping:
+  _target_: wav2sleep.trainer.callbacks.ResettableEarlyStopping
+  monitor: val_loss
+  min_delta: 0.00
+  patience: 5
+  verbose: False
+  mode: min
+  reset: False

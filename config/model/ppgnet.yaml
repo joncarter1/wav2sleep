@@ -1,0 +1,7 @@
+# SleepPPG-Net Configuration
+_target_:  wav2sleep.models.ppgnet.SleepPPGNet
+n_classes: ${num_classes}
+norm: batch
+feature_dim: 128
+activation: leaky
+dropout: 0.2

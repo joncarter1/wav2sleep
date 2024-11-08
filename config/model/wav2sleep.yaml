@@ -1,0 +1,25 @@
+# Model configuration for the wav2sleep model
+_target_: wav2sleep.models.wav2sleep.Wav2Sleep
+num_classes: ${num_classes}
+signal_encoders:
+  _target_: wav2sleep.models.wav2sleep.SignalEncoders
+  feature_dim: ${feature_dim}
+  activation: gelu
+  norm: instance
+  size: large
+  signal_map: ${inputs.signal_map}
+epoch_mixer:
+  _target_: wav2sleep.models.wav2sleep.MultiModalAttentionEmbedder
+  feature_dim: ${feature_dim}
+  dropout: 0.1
+  activation: gelu
+  layers: 2
+  dim_ff: 512
+  nhead: 8
+  permute_signals: True
+sequence_mixer:
+  _target_: wav2sleep.models.wav2sleep.SequenceCNN
+  feature_dim: ${feature_dim}
+  dropout: 0.1
+  activation: gelu
+  norm: layer

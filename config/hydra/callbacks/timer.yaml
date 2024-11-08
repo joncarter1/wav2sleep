@@ -1,0 +1,2 @@
+timer:
+  _target_: hydra_useful_callbacks.TimerCallback

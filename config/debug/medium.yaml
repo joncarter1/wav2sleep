@@ -1,0 +1,4 @@
+defaults:
+  - light
+
+max_nights: 20 # Use subset for training/testing in medum debug mode

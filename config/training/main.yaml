@@ -1,0 +1,75 @@
+defaults:
+  - optimizer: adamw
+  - scheduler: expdecay
+  - callbacks:
+    - checkpointing
+    - lr_monitor
+    - early_stopping
+    - progress
+  - _self_
+
+
+# Trainer config
+trainer:
+  _target_: lightning.pytorch.trainer.Trainer
+  accelerator: gpu
+  devices: ${num_gpus}
+  max_epochs: ${epochs}
+  accumulate_grad_batches: 1 # Accumulate gradients from this many batches before each optimizer step.
+  strategy: auto
+  gradient_clip_val: null # Gradient clipping value
+  callbacks: ${oc.dict.values:training.callbacks} # https://omegaconf.readthedocs.io/en/latest/custom_resolvers.html#oc-dict-keys-value
+  default_root_dir: "${oc.env:WAV2SLEEP_STORAGE}/lightning"
+  logger:
+    _target_: lightning.pytorch.loggers.MLFlowLogger
+    experiment_name: ${mlflow_experiment}
+    tracking_uri: "${oc.env: MLFLOW_TRACKING_URI, null}"
+    log_model: all # 'all' logs checkpoints throughout, True will just checkpoint at the end
+    run_id: "${oc.env: MLFLOW_RUN_ID, null}" # Set in main process.
+
+# Lightning Module config
+module:
+  _target_: wav2sleep.trainer.SleepLightningModel
+  model: ${model}
+  optimizer: ${training.optimizer}
+  scheduler: ${oc.select:training.scheduler}
+  criterion:
+    _target_: torch.nn.CrossEntropyLoss
+    reduction: mean
+    label_smoothing: 0.0
+    ignore_index: -1 # Ignore output labels set to -1 e.g. unscored.
+    weight: null
+  num_classes: ${num_classes}
+  debug_level: ${debug.level}
+  on_step: True
+  on_epoch: True
+  flip_polarity: True
+  masker:
+    _target_: wav2sleep.trainer.masker.SignalMasker
+    dropouts:
+      ABD: 0.7
+      THX: 0.7
+      ECG: 0.5
+      PPG: 0.1
+    backups:
+      - ECG
+      - PPG
+
+# Datamodule config
+datamodule:
+  _target_: wav2sleep.data.datamodule.SleepDataModule
+  columns: "${oc.dict.keys: inputs.signal_map}"
+  num_classes: ${num_classes}
+  max_nights: "${oc.select: debug.max_nights, 1_000_000}"
+  data_location: ${data_location}
+  train_datasets: ${datasets.train}
+  val_datasets: ${datasets.val}
+  test_datasets: ${datasets.test}
+  test: ${test} # Whether test sets are needed.
+  exclude_issues: True
+  batch_size: ${batch_size}
+  num_workers: ${num_cpus}
+  persistent_workers: True
+  pin_memory: True
+  val_batch_size: 32
+  test_batch_size: 32

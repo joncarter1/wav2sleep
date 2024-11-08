@@ -1,0 +1,3 @@
+git:
+  _target_: hydra_useful_callbacks.GitCleanCallback
+  override: "${oc.select: debug.level, False}"

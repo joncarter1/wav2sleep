@@ -1,0 +1,23 @@
+# pyproject.toml files are configuration files used by Python packaging and development tools.
+[build-system]
+requires = ["setuptools >= 61.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.ruff]
+line-length = 120
+fix = true
+exclude = ["docs"]
+
+[tool.ruff.format]
+quote-style = "single"
+indent-style = "space"
+docstring-code-format = true
+
+[tool.ruff.lint]
+select = ["S", "I", "F"]
+# Skip unused variable rules: https://www.flake8rules.com/rules/F841.html
+# Loose imports: https://www.flake8rules.com/rules/F403.html
+ignore = ["F841", "S311", "S108", "F403", "S506", "S101"]
+
+[tool.ruff.lint.isort]
+case-sensitive = true

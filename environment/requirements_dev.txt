@@ -1,0 +1,9 @@
+# Extra dependencies used for development but not required for experimentation.
+# Separating these concerns aids development, and acts as a form of documentation on what matters where.
+# Testing
+pytest >= 7.2.2
+pytest-cov >= 4.0.0
+# Development extras
+pre-commit >= 3.6.0 # Runs code checks before Git commits.
+ruff >= 0.1.4 # Super-fast linting and auto-formatting implemented in Rust.
+mypy >= 1.8 # Static type-checking.

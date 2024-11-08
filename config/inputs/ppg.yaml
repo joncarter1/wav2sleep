@@ -1,0 +1,3 @@
+# Mapping from columns to embedders.
+signal_map:
+  PPG: UNI
