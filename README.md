@@ -7,7 +7,7 @@
 
 ## Overview
 
-This repository contains the official implemententation of **wav2sleep**💤, which has been accepted to **[Machine Learning for Health (ML4H) 2024](https://ahli.cc/ml4h/)**.
+This repository contains the official implementation of **wav2sleep**💤, which has been accepted to **[Machine Learning for Health (ML4H) 2024](https://ahli.cc/ml4h/)**.
 
 wav2sleep is a unified model for sleep staging from sets of cardio-respiratory (🫀/🫁) signals. It can be jointly trained across heterogeneous datasets, where the availability of input signals can vary. At test-time, the model can be applied to *any* subset of the modalities used during training.
 
