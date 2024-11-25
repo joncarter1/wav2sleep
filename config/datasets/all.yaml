@@ -1,0 +1,25 @@
+# Dataset names
+train:
+  - ccshs
+  - cfs
+  - chat
+  - mesa
+  - shhs
+  - wsc
+val:
+  - ccshs
+  - cfs
+  - chat
+  - mesa
+  - shhs
+  - wsc
+  - census
+test:
+  - ccshs
+  - cfs
+  - chat
+  - mesa
+  - shhs
+  - wsc
+  - census
+  - mros

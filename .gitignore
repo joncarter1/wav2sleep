@@ -58,7 +58,6 @@ junit.xml
 
 # Hydra / MLFlow / etc.
 mlruns
-datasets
 multirun
 outputs
 notebooks
