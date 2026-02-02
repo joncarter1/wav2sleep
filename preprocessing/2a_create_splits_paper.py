@@ -23,6 +23,12 @@ def parse_args():
         default=None,
         help='Output folder for splits. Defaults to adjacent to ingest folder.',
     )
+    parser.add_argument(
+        '--copy',
+        action='store_true',
+        help='Copy files to output folder rather than symlinking.',
+        default=False,
+    )
     return parser.parse_args()
 
 
@@ -37,23 +43,31 @@ def main() -> None:
         output_folder = args.output_folder
     else:
         output_folder = folder
+    num_train, num_val, num_test = 0, 0, 0
     for fp in tqdm(fps):
         o_fp = None
         session_id = os.path.basename(fp).replace('.parquet', '').replace('.issues', '')
         # Determine whether file is for train/val/test set.
         if session_id in train:
             o_fp = os.path.join(output_folder, f'{TRAIN}', os.path.basename(fp))
+            num_train += 1
         elif session_id in val:
             o_fp = os.path.join(output_folder, f'{VAL}', os.path.basename(fp))
+            num_val += 1
         elif session_id in test:
             o_fp = os.path.join(output_folder, f'{TEST}', os.path.basename(fp))
+            num_test += 1
         else:
             # Ignored due e.g. to scoring issues.
             logger.debug(f'Session {session_id} not found in train/val/test sets.')
             continue
         if o_fp is not None:
             os.makedirs(os.path.dirname(o_fp), exist_ok=True)
-            shutil.copy2(fp, o_fp)
+            if args.copy:
+                shutil.copy2(fp, o_fp)
+            else:
+                os.symlink(fp, o_fp)
+    print(f'Created {num_train} train, {num_val} val, {num_test} test files.')
 
 
 if __name__ == '__main__':

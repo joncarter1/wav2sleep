@@ -60,7 +60,7 @@ def parallelise(
     _ray_func = ray.remote(**ray_config)(func)
     result_refs: list['ObjectRef[Y]'] = []
     # Create a tqdm wrapper function if use_tqdm=True
-    if use_tqdm and tqdm is None:
+    if use_tqdm and tqdm is not None:
         wrapped_iterator = tqdm(enumerate(iterator))
     else:
         wrapped_iterator = enumerate(iterator)

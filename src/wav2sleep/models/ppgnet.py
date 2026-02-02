@@ -12,7 +12,7 @@ __all__ = ('SleepPPGNet',)
 import torch
 from torch import Tensor, nn
 
-from .blocks import ConvBlock1D, ConvLayer1D
+from .blocks import ConvBlock1D, DilatedConvBlock
 from .utils import get_activation
 
 
@@ -124,56 +124,3 @@ class DenseBlock(nn.Module):
         out = self.activation(out)
         # Re-shape back to channel-first for dilated convolutions.
         return out.transpose(-1, -2)
-
-
-class DilatedConvBlock(nn.Module):
-    """Dilated Convolutional Block.
-
-    Uses a consistent channel dimension and progressively wider dilations to increase the context length for each epoch.
-    """
-
-    DILATIONS = [1, 2, 4, 8, 16, 32]
-
-    def __init__(
-        self,
-        feature_dim: int = 128,
-        dropout: float = 0.2,
-        activation: str = 'leaky',
-        norm: str = 'batch',
-        kernel_size: int = 7,
-    ) -> None:
-        super().__init__()
-        blocks = []
-        self.kernel_size = kernel_size
-        for dilation in self.DILATIONS:
-            # Calculate effective kernel size to pad correctly.
-            k_eff = kernel_size + (kernel_size - 1) * (dilation - 1)
-            padding = k_eff // 2
-            blocks.append(
-                ConvLayer1D(
-                    input_dim=feature_dim,
-                    output_dim=feature_dim,
-                    kernel_size=kernel_size,
-                    stride=1,
-                    dilation=dilation,
-                    padding=padding,
-                    activation=activation,
-                    norm=norm,
-                )
-            )
-        self.dropout = nn.Dropout(p=dropout)
-        self.conv_layers = nn.Sequential(*blocks)
-        self.activation = get_activation(activation)
-
-    def forward(self, x: Tensor) -> Tensor:
-        """
-        Args:
-            x (Tensor): shape [N, F, S]
-        Returns:
-            Tensor: shape [N, F, S]
-        """
-        out = self.conv_layers(x)
-        out = self.dropout(out)
-        out = out + x
-        out = self.activation(out)
-        return out

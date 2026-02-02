@@ -14,11 +14,14 @@ def get_parquet_cols(fp: str) -> set[str]:
     return cols
 
 
-def get_parquet_fps(folder: str) -> list[str]:
+def get_parquet_fps(folder: str, recursive: bool = False) -> list[str]:
     """Return parquet files in a folder."""
     if not os.path.exists(folder):
         raise FileNotFoundError(folder)
-    return glob(f'{folder}/*.parquet')
+    if recursive:
+        return glob(f'{folder}/**/*.parquet', recursive=True)
+    else:
+        return glob(f'{folder}/*.parquet')
 
 
 def convert_int_stage(stage: int | str):

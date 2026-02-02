@@ -1,0 +1,11 @@
+# Mapping from columns to embedder names.
+signal_map:
+  EOG-L: EOG-L
+  EOG-R: EOG-R
+
+# Stochastic dropout of signals.
+masker:
+  _target_: wav2sleep.trainer.masker.SignalMasker
+  dropouts:
+    EOG-L: 0.7
+    EOG-R: 0.7

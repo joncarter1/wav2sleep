@@ -11,13 +11,7 @@ from wav2sleep.settings import CENSUS, INGEST, TEST, VAL
 JONES_SPLITS = {VAL: get_split(CENSUS, VAL), TEST: get_split(CENSUS, TEST)}
 
 
-def parse_args():
-    parser = argparse.ArgumentParser(prog='Dataset Splitter', description='Split dataset into train, val, test sets.')
-    parser.add_argument('--folder', help='Location of processed NSRR datasets.')
-    return parser.parse_args()
-
-
-def build_set(folder: str, split: str, all_parquet_fps: list[str]) -> None:
+def build_set(folder: str, split: str, all_parquet_fps: list[str], copy: bool = False) -> None:
     if split not in (VAL, TEST):
         raise ValueError(f'Split must be either {VAL} or {TEST}')
 
@@ -41,7 +35,17 @@ def build_set(folder: str, split: str, all_parquet_fps: list[str]) -> None:
     for session_id, fp in tqdm(found.items()):
         o_fp = os.path.join(folder, CENSUS, split, os.path.basename(fp).replace('.issues', ''))
         os.makedirs(os.path.dirname(o_fp), exist_ok=True)
-        shutil.copy2(fp, o_fp)
+        if copy:
+            shutil.copy2(fp, o_fp)
+        else:
+            os.symlink(fp, o_fp)
+
+
+def parse_args():
+    parser = argparse.ArgumentParser(prog='Dataset Splitter', description='Split dataset into train, val, test sets.')
+    parser.add_argument('--folder', help='Location of processed NSRR datasets.')
+    parser.add_argument('--copy', action='store_true', help='Copy files to new folder.')
+    return parser.parse_args()
 
 
 def main() -> None:
@@ -49,8 +53,8 @@ def main() -> None:
     print('Globbing all ingested files...')
     all_parquet_fps = glob(f'{args.folder}/*/{INGEST}/*.parquet')
     print('Found ', len(all_parquet_fps), 'files.')
-    build_set(args.folder, VAL, all_parquet_fps)
-    build_set(args.folder, TEST, all_parquet_fps)
+    build_set(args.folder, VAL, all_parquet_fps, copy=args.copy)
+    build_set(args.folder, TEST, all_parquet_fps, copy=args.copy)
 
 
 if __name__ == '__main__':

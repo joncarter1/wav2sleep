@@ -1,6 +1,0 @@
-# Mapping from columns to embedder names.
-signal_map:
-  ABD: ABD
-  THX: THX
-  ECG: ECG
-  PPG: PPG

@@ -1,4 +1,5 @@
-import numpy as np
+import math
+
 from torch.optim import Optimizer
 from torch.optim.lr_scheduler import LRScheduler
 
@@ -20,8 +21,12 @@ class ExpWarmUpScheduler(LRScheduler):
         super().__init__(optimizer, last_epoch=-1)
 
     def get_lr(self) -> float:
-        if self._step_count < self.warmup_steps:
-            lr = self.lr_max * (self._step_count / self.warmup_steps)
-        else:  # Exponential decay
-            lr = self.lr_max * np.exp(-(self._step_count - self.warmup_steps) / self.tau)
+        # Use last_epoch (checkpointed) rather than _step_count (not checkpointed)
+        # so LR schedule is consistent after resuming from checkpoints.
+        # last_epoch starts at -1 before the first step, so use step = last_epoch + 1.
+        step = self.last_epoch + 1
+        if step <= self.warmup_steps:
+            lr = self.lr_max * (step / self.warmup_steps)
+        else:  # Exponential decay after warmup
+            lr = self.lr_max * math.exp(-(step - self.warmup_steps) / self.tau)
         return [lr] * self.num_param_groups

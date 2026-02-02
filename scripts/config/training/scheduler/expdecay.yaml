@@ -1,0 +1,5 @@
+_target_: wav2sleep.trainer.scheduler.ExpWarmUpScheduler
+lr_max: ${training.optimizer.lr}
+warmup_steps: 2000
+tau: 10000
+_partial_: True

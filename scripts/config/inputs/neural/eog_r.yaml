@@ -1,0 +1,3 @@
+# Mapping from columns to embedder names.
+signal_map:
+  EOG-R: EOG-R

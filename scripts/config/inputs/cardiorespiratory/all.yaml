@@ -1,0 +1,18 @@
+# Mapping from columns to embedder names.
+signal_map:
+  ABD: ABD
+  THX: THX
+  ECG: ECG
+  PPG: PPG
+
+# Stochastic dropout of signals.
+masker:
+  _target_: wav2sleep.trainer.masker.SignalMasker
+  dropouts:
+    ABD: 0.7
+    THX: 0.7
+    ECG: 0.5
+    PPG: 0.1
+  backups:
+    - ECG
+    - PPG

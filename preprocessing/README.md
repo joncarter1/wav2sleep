@@ -15,14 +15,14 @@ nsrr download shhs # Downloads into your current working directory.
 
 For the CHAT dataset, you will then need to run:
 ```bash
-python 0_fix_edfs.py /path/to/chat/polysomnography/edfs
+uv run 0_fix_edfs.py /path/to/chat/polysomnography/edfs
 ```
 to fix some of the EDF files for parsing with `pyedflib`.
 
 ### Ingestion
 Once downloaded, we provide scripts to extract only the required signals and sleep stage annotations for all datasets, saving them as high-performance, columnar parquet e.g.:
 ```bash
-python 1_ingest.py --folder /path/to/shhs --output-folder /path/to/processed/datasets --overwrite
+uv run 1_ingest.py --folder /path/to/shhs --output-folder /path/to/processed/datasets --overwrite
 ```
 will save a processed version of SHHS at `/path/to/processed/datasets/shhs/ingest`. This can be parallelised over multiple cores with Ray using the `--max-parallel` flag.
 
@@ -40,10 +40,10 @@ All ingested datasets should be stored under the same root (or symlinked appropr
 ### Split the datasets
 Next, the datasets need to be split into `train`, `val` and `test` subfolders. This can be done for each dataset with:
 ```bash
-python 2a_create_splits_paper.py --folder /path/to/processed/datasets/shhs
+uv run 2a_create_splits_paper.py --folder /path/to/processed/datasets/shhs
 ...
-python 2a_create_splits_paper.py --folder /path/to/processed/datasets/mros
-python 2b_create_census_split.py --folder /path/to/processed/datasets
+uv run 2a_create_splits_paper.py --folder /path/to/processed/datasets/mros
+uv run 2b_create_census_split.py --folder /path/to/processed/datasets
 ```
 This will create `train`, `val` and `test` folders, and copy the relevant files over from the `ingest` folder(s).
 

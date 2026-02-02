@@ -1,0 +1,5 @@
+ema:
+  _target_: wav2sleep.trainer.callbacks.EMACallback
+  decay: 0.9999
+  start_step: 2000
+  device: null

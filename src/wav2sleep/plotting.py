@@ -36,8 +36,8 @@ def plot_confusion_matrix(
         fig = None
     group_counts = ['{0:0.0f}'.format(value) for value in confusion_matrix.flatten()]
     if include_pcts:
-        group_percentages = np.array(
-            [['{0:.2%}'.format(np.nan_to_num(i / np.sum(row), 0)) for i in row] for row in confusion_matrix]
+        group_percentages = np.asarray(
+            [['{0:.2%}'.format(i / np.sum(row) if np.sum(row) != 0 else 0) for i in row] for row in confusion_matrix]
         ).flatten()
         box_labels = [f'{v2}\n({v3})'.strip() for v2, v3 in zip(group_counts, group_percentages)]
     else:
@@ -75,7 +75,7 @@ def plot_confusion_matrix(
     ax2y.set_xlabel('Precision', fontsize=annot_fontsize)
     ax2x.set_ylabel('Recall', fontsize=annot_fontsize)
     ## Acc
-    acc_str = f'Acc={100*accuracy:0.1f}. $\kappa$={kappa:.3f}'
+    acc_str = f'Acc={100 * accuracy:0.1f}. $\kappa$={kappa:.3f}'
     if description is None:
         title_str = acc_str
     else:

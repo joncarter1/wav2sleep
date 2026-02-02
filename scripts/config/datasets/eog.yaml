@@ -1,0 +1,20 @@
+# Datasets used to train EOG models.
+train:
+  - ccshs
+  - cfs
+  - chat
+  - mesa
+  - wsc
+val:
+  - ccshs
+  - cfs
+  - chat
+  - mesa
+  - wsc
+test:
+  - ccshs
+  - cfs
+  - chat
+  - mesa
+  - wsc
+  - mros

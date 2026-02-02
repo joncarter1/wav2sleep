@@ -1,0 +1,28 @@
+defaults:
+  - submitit_slurm
+
+name: ${hydra.job.name}
+nodes: 1
+tasks_per_node: ${num_gpus}
+cpus_per_task: ${num_cpus}
+mem_gb: 128
+timeout_min: 720
+
+partition: gpu
+qos: null
+# constraint: 'gpu_mem:32GB'  # Uncomment and adjust for your cluster
+
+# Following parameters are submitit specifics
+setup:
+  - export PYTHONWARNINGS='ignore::DeprecationWarning:lightning.fabric'
+
+gres: "gpu:${num_gpus}"
+cpus_per_gpu: null
+gpus_per_node: null
+mem_per_gpu: null
+mem_per_cpu: null
+account: null
+comment: null
+exclude: null
+stderr_to_stdout: False
+array_parallelism: 256
