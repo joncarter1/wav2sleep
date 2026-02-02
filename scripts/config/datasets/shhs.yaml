@@ -1,0 +1,7 @@
+# Dataset names
+train:
+  - shhs
+val:
+  - shhs
+test:
+  - shhs

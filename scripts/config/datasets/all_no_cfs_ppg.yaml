@@ -1,0 +1,33 @@
+# Dataset configuration excluding CFS and CCSHS
+#
+# CFS and CCSHS are excluded due to systematic PPG data quality issues:
+#
+# From diagnose_ppg_quality.py analysis:
+#   - CFS:   median_mean = -0.382, z-score = 12.8, 100% outliers
+#   - CCSHS: median_mean = -0.388, z-score = 13.0, 100% outliers
+#   - MESA:  median_mean = +0.003, z-score = 0.0,  0% outliers (good)
+#
+# Both CFS and CCSHS have severe negative baseline offset affecting ALL recordings.
+# This corrupts causal normalization's EMA baseline tracking.
+#
+# Usage:
+#   uv run scripts/train.py model=wav2sleep causal=True datasets=all_no_cfs_ppg
+
+train:
+  - chat
+  - mesa
+  - shhs
+  - wsc
+val:
+  - chat
+  - mesa
+  - shhs
+  - wsc
+  - census
+test:
+  - chat
+  - mesa
+  - shhs
+  - wsc
+  - census
+  - mros

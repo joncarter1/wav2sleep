@@ -21,6 +21,7 @@ logger = logging.getLogger(__name__)
 # Mapping from num classes to categorisation
 SLEEP_STAGE_CATEGORIES = {
     4: ['Wake', 'N1+N2', 'N3', 'REM'],
+    5: ['Wake', 'N1', 'N2', 'N3', 'REM'],
 }
 
 

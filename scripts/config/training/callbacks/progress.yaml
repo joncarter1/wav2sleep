@@ -1,0 +1,4 @@
+progress:
+  _target_: wav2sleep.trainer.callbacks.CustomTQDMProgressBar
+  refresh_rate: 16
+  smoothing: 0.7

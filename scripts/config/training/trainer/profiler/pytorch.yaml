@@ -1,0 +1,3 @@
+_target_: lightning.pytorch.profilers.PyTorchProfiler
+dirpath: tmp
+filename: pytorch_profiler.json

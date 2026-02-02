@@ -1,6 +1,6 @@
 """PyTorch lightning model classes for sleep transformer models."""
 
-__all__ = ('SleepLightningModel',)
+__all__ = ('SleepLightningModule',)
 import logging
 from collections import defaultdict
 from typing import Callable, Iterator, Optional
@@ -20,7 +20,19 @@ from wav2sleep.models.ppgnet import SleepPPGNet
 from wav2sleep.models.wav2sleep import Wav2Sleep
 from wav2sleep.trainer.scheduler import ExpWarmUpScheduler
 
-from ..settings import CCSHS, CFS, CHAT, ECG, MESA, PPG, SHHS, TEST, THX, TRAIN, VAL
+from ..settings import (
+    CCSHS,
+    CFS,
+    CHAT,
+    ECG,
+    MESA,
+    PPG,
+    SHHS,
+    TEST,
+    THX,
+    TRAIN,
+    VAL,
+)
 from .masker import SignalMasker
 
 logger = logging.getLogger(__name__)
@@ -35,16 +47,19 @@ def sum_if_distributed(tensor):
 
 
 def confusion_matrix(y_out, y_true, cmat_func: MulticlassConfusionMatrix, from_logits: bool = True):
-    """Compute confusion matrix of PyTorch Tensors which may lie on GPU and should be in logit form."""
-    # Remove invalid labels (-1) from calculation.
-    y_out, y_true = y_out[y_true >= 0], y_true[y_true >= 0]
+    """Compute confusion matrix of PyTorch Tensors which may lie on GPU and should be in logit form.
+
+    Note: Decorated with @torch._dynamo.disable because torchmetrics uses torch.unique internally,
+    which has dynamic output shape that torch.compile cannot handle.
+    """
+    # y_out, y_true = y_out[y_true >= 0], y_true[y_true >= 0] # Remove invalid labels (-1) from calculation.
     y_out = y_out.detach()
     if from_logits:
         y_out = y_out.argmax(dim=-1)
     return cmat_func(y_out, y_true).detach()
 
 
-class SleepLightningModel(lightning.LightningModule):
+class SleepLightningModule(lightning.LightningModule):
     """Wrapper around the underlying model that handles the training process.
 
     This includes computing the loss function.
@@ -65,11 +80,12 @@ class SleepLightningModel(lightning.LightningModule):
         num_classes: int = 4,
         masker: SignalMasker | None = None,
         flip_polarity: bool = True,
+        causal: bool = False,
     ):
         super().__init__()
         self.model = model
         self.num_classes = num_classes
-        self.cmat_func = MulticlassConfusionMatrix(num_classes=num_classes)
+        self.cmat_func = MulticlassConfusionMatrix(num_classes=num_classes, ignore_index=-1)
         self.criterion = criterion
         self.optimizer = optimizer
         self.scheduler = scheduler
@@ -84,6 +100,7 @@ class SleepLightningModel(lightning.LightningModule):
             self.masker = masker
         else:
             self.masker = None
+        self.causal = causal
         self.flip_polarity = flip_polarity
         # Is the model unified? i.e. does it work on multiple modalities
         self.unified = isinstance(model, Wav2Sleep) and len(model.signal_encoders) > 1
@@ -110,6 +127,15 @@ class SleepLightningModel(lightning.LightningModule):
         else:
             ds_name = self.trainer.datamodule.test_dataset_map[dataloader_idx]
         return ds_name
+
+    def on_after_batch_transfer(self, batch, dataloader_idx):
+        x, y = batch
+        if self.trainer.training:
+            if self.flip_polarity:
+                invert_signals(x)
+            if self.unified and self.masker is not None:
+                self.masker(x)
+        return x, y
 
     def _step(
         self,
@@ -146,7 +172,7 @@ class SleepLightningModel(lightning.LightningModule):
             self.aux_outputs[mode][sig_prefix][ds_name] += sum_if_distributed(cmat)
         self.log(
             loss_name,
-            float(loss),
+            float(loss.detach()),
             prog_bar=True,
             logger=True,
             on_step=self.on_step,
@@ -157,11 +183,6 @@ class SleepLightningModel(lightning.LightningModule):
         return loss
 
     def training_step(self, batch, batch_idx):
-        signals, _ = batch
-        if self.flip_polarity:
-            invert_signals(signals)
-        if self.unified and self.masker is not None:
-            self.masker(signals)
         return self._step(batch, mode=TRAIN)
 
     def validation_step(self, batch, batch_idx, dataloader_idx: int = 0):
@@ -237,7 +258,7 @@ class SleepLightningModel(lightning.LightningModule):
                         prefix = f'{mode}_{ds_name}'
                     else:
                         prefix = f'{mode}_{sig_prefix}_{ds_name}'
-                    log_aux_metrics(cmat.cpu().numpy(), epoch=epoch, prefix=prefix)
+                    log_aux_metrics(cmat.cpu().float().numpy(), epoch=epoch, prefix=prefix)
         self.aux_outputs[mode] = defaultdict(lambda: defaultdict(lambda: 0.0))  # Reset
 
     def on_train_epoch_end(self) -> None:
@@ -274,6 +295,43 @@ class SleepLightningModel(lightning.LightningModule):
         else:
             raise ValueError(f'{scheduler} is not configured.')
         return optimizer_dict
+
+    def on_save_checkpoint(self, checkpoint: dict) -> None:
+        """Save gradient clipping config and RNG states for validation on resume."""
+        # Save gradient clipping configuration
+        checkpoint['gradient_clip_val'] = self.trainer.gradient_clip_val
+        checkpoint['gradient_clip_algorithm'] = self.trainer.gradient_clip_algorithm
+
+        # Save RNG states for augmentation consistency
+        checkpoint['rng_state'] = torch.get_rng_state()
+        if torch.cuda.is_available():
+            checkpoint['cuda_rng_state_all'] = torch.cuda.get_rng_state_all()
+
+    def on_load_checkpoint(self, checkpoint: dict) -> None:
+        """Validate gradient clipping config and restore RNG states."""
+        # Check for gradient clipping mismatch
+        ckpt_clip_val = checkpoint.get('gradient_clip_val', None)
+        current_clip_val = self.trainer.gradient_clip_val if hasattr(self, 'trainer') else None
+
+        if ckpt_clip_val != current_clip_val:
+            logger.warning(
+                f'\n{"=" * 70}\n'
+                f'GRADIENT CLIPPING MISMATCH DETECTED!\n'
+                f'  Checkpoint trained with: gradient_clip_val={ckpt_clip_val}\n'
+                f'  Current config has:      gradient_clip_val={current_clip_val}\n'
+                f'\n'
+                f'This can cause training instability (increasing training loss)!\n'
+                f'\n'
+                f'To fix, override the config when resuming:\n'
+                f'  training.trainer.gradient_clip_val={ckpt_clip_val}\n'
+                f'{"=" * 70}\n'
+            )
+
+        # Restore RNG states for augmentation consistency
+        if 'rng_state' in checkpoint:
+            torch.set_rng_state(checkpoint['rng_state'])
+        if 'cuda_rng_state_all' in checkpoint and torch.cuda.is_available():
+            torch.cuda.set_rng_state_all(checkpoint['cuda_rng_state_all'])
 
 
 def sortkey(x):

@@ -1,0 +1,33 @@
+# Model configuration for the wav2sleep model
+_target_: wav2sleep.models.wav2sleep.Wav2Sleep
+num_classes: ${num_classes}
+signal_encoders:
+  _target_: wav2sleep.models.wav2sleep.SignalEncoders
+  signal_map: ${inputs.signal_map}
+  feature_dim: ${feature_dim}
+  activation: gelu
+  norm: instance
+  causal: ${causal}
+  chunk_causal: False
+  initial_channels: 16
+  max_channels: 128
+  output_norm: False
+  use_residual: True
+epoch_mixer:
+  _target_: wav2sleep.models.wav2sleep.MultiModalAttentionEmbedder
+  feature_dim: ${feature_dim}
+  dropout: 0.1
+  activation: gelu
+  layers: 2
+  dim_ff: 512
+  nhead: 8
+sequence_mixer:
+  _target_: wav2sleep.models.wav2sleep.SequenceCNN
+  feature_dim: ${feature_dim}
+  dropout: 0.1
+  activation: gelu
+  norm: layer
+  causal: ${causal}
+  num_layers: 2
+  kernel_size: 7
+  num_dilations: 6 # 6 means we use dilations of: 1, 2, 4, 8, 16, 32.

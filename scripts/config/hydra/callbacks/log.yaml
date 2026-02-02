@@ -1,0 +1,2 @@
+log:
+  _target_: hydra.experimental.callbacks.LogJobReturnCallback

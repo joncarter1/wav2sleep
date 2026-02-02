@@ -9,21 +9,14 @@ repos:
   - id: debug-statements # Checks there aren't Python debugger statements lying around.
   - id: end-of-file-fixer # Make sure files are empty, or end with a newline.
   - id: trailing-whitespace # Removes trailing whitespace from files.
-# Run all pre-commit hooks from local repo for improved speed & lower maintenance overheads
-- repo: local
+# Ruff hooks.
+repos:
+- repo: https://github.com/astral-sh/ruff-pre-commit
+  # Ruff version.
+  rev: v0.12.2
   hooks:
-# Format code e.g. overlength lines.
-  - id: ruff_format
-    name: Formatting Python files using Ruff
-    require_serial: true
-    language: python
-    types_or: [python]
-    entry: ruff format
-# Lint code i.e. check for PEP/style compliance.
-  - id: ruff_lint
-    name: Linting Python files using Ruff
-    require_serial: true
-    language: python
-    types_or: [python]
-    entry: ruff check
-    args: [--fix] # https://docs.astral.sh/ruff/rules
+    # Run the linter.
+    - id: ruff-check
+      args: [ --fix ]
+    # Run the formatter.
+    - id: ruff-format
