@@ -43,6 +43,13 @@ from .settings import LABEL, PRED, TIMESTAMP
 logger = logging.getLogger(__name__)
 
 
+def _resolve_device(device: str) -> str:
+    """Resolve 'auto' to a concrete torch device string."""
+    if device == 'auto':
+        device = 'cuda' if torch.cuda.is_available() else 'cpu'
+    return device
+
+
 def load_model(
     folder: str,
     device: str = 'auto',
@@ -70,8 +77,7 @@ def load_model(
         folder = download_from_hub(folder, revision=revision, cache_dir=cache_dir)
 
     # Resolve device
-    if device == 'auto':
-        device = 'cuda' if torch.cuda.is_available() else 'cpu'
+    device = _resolve_device(device)
     device_info = f' ({torch.cuda.get_device_name(0)})' if device.startswith('cuda') and torch.cuda.is_available() else ''
     logger.info(f'Using device: {device}{device_info}')
 
@@ -158,13 +164,14 @@ def load_dataset(
 def predict(
     model: Wav2Sleep,
     dataset: ParquetDataset,
-    device: str = 'cuda',
+    device: str = 'auto',
     batch_size: int = 4,
     num_workers: int = 4,
 ) -> Tuple[torch.Tensor, Optional[torch.Tensor]]:
     """Apply a wav2sleep model to a dataset and return predictions (and labels if present)."""
+    device = _resolve_device(device)
     dataloader = torch.utils.data.DataLoader(
-        dataset, batch_size=batch_size, num_workers=num_workers, pin_memory=True, shuffle=False
+        dataset, batch_size=batch_size, num_workers=num_workers, pin_memory=device.startswith('cuda'), shuffle=False
     )
     causal = model.signal_encoders.causal
     predictions = []
@@ -220,7 +227,7 @@ def predict_on_folder(
     model: Optional[Wav2Sleep] = None,
     model_folder: Optional[str] = None,
     signals: Optional[Iterable[str]] = None,
-    device: str = 'cuda',
+    device: str = 'auto',
     batch_size: int = 4,
     num_workers: int = 4,
     preprocess: bool = True,
@@ -247,6 +254,7 @@ def predict_on_folder(
         overwrite: Overwrite existing output CSVs.
         compile: If True and loading from `model_folder`, compile the model.
     """
+    device = _resolve_device(device)
     if model is None:
         if model_folder is None:
             raise ValueError('Either `model` or `model_folder` must be provided.')
