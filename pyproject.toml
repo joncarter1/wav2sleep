@@ -15,7 +15,7 @@ dependencies = [
     "pyedflib>=0.1.42",
     "omegaconf>=2.3.0",
     "torch>=2.7.1",
-    "mlflow<3",
+    "mlflow",
     "seaborn>=0.13.2",
     "numba>=0.60.0",
     "hydra-useful-callbacks",
