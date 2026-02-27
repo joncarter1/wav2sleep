@@ -98,7 +98,7 @@ Run the EOG model on already-processed parquet files using the `no-preprocess` f
 ```bash
 uv run scripts/predict.py --input-folder /path/to/processed/mesa/test  \
 --output-folder /tmp/example-mesa-outputs \
---model-folder checkpoints/wav2sleep-eog \
+--model-folder hf://joncarter/wav2sleep-eog \
 --batch-size 16 --no-preprocess
 ```
 
@@ -106,7 +106,7 @@ Run the EOG model on raw EDF files, with analysis of up to 14 hours per file:
 ```bash
 uv run scripts/predict.py --input-folder /path/to/edf/folder \
 --output-folder /tmp/example-outputs \
---model-folder checkpoints/wav2sleep-eog \
+--model-folder hf://joncarter/wav2sleep-eog \
 --batch-size 16 --max-length-hours 14
 ```
 (This will skip broken EDF files)
@@ -136,11 +136,11 @@ predict_on_folder(
 )
 ```
 
-To upload checkpoints to the Hub:
+To upload a local model folder to the Hub:
 
 ```bash
 uv run scripts/upload_to_hub.py \
-    --local-folder checkpoints/wav2sleep-eog \
+    --local-folder /path/to/model-folder \
     --repo-id your-username/wav2sleep-eog \
     --variant wav2sleep-eog
 ```
