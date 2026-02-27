@@ -59,7 +59,7 @@ def parse_args():
         default=None,
         help='Subset of signals to use, e.g. ECG,THX. If unspecified, all supported signals will be used.',
     )
-    parser.add_argument('--device', required=False, type=str, default='cuda', help='Device to use for inference.')
+    parser.add_argument('--device', required=False, type=str, default='auto', help='Device to use for inference.')
     parser.add_argument('--batch-size', type=int, default=4, help='Batch size for inference.')
     parser.add_argument('--num-workers', type=int, default=4, help='Number of workers for inference.')
     parser.add_argument(
