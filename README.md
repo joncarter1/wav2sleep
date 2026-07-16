@@ -1,7 +1,14 @@
-<div align="center">
-  <h2><b>wav2sleep 💤: A Unified Multi-Modal Approach to Sleep Stage Classification from Physiological Signals
-  </b></h2>
-</div>
+<h1 align="center">wav2sleep 💤</h1>
+
+<p align="center">
+  <em>A Unified Multi-Modal Approach to Sleep Stage Classification from Physiological Signals</em>
+</p>
+
+<p align="center">
+  <a href="https://arxiv.org/abs/2411.04644"><img src="https://img.shields.io/badge/arXiv-2411.04644-b31b1b.svg" alt="arXiv"></a>
+  <a href="https://huggingface.co/joncarter/wav2sleep"><img src="https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-wav2sleep-yellow" alt="Hugging Face: wav2sleep"></a>
+  <a href="https://huggingface.co/joncarter/wav2sleep-eog"><img src="https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-wav2sleep--eog-yellow" alt="Hugging Face: wav2sleep-eog"></a>
+</p>
 
 ![image](figures/wav2sleep.jpg)
 
@@ -14,8 +21,6 @@ wav2sleep is a unified model for sleep staging from sets of physiological signal
 After jointly training on over 10,000 overnight recordings from publicly available polysomnography datasets, including SHHS and MESA, wav2sleep outperforms existing sleep stage classification models across a range of input signal combinations.
 
 To find out more, check out our paper: https://arxiv.org/abs/2411.04644
-
-<a href="https://arxiv.org/abs/2411.04644"><img src="https://img.shields.io/badge/Arxiv-2411.04644-B31B1B.svg"></a>
 
 ## Updates
 
